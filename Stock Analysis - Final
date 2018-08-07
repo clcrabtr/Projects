@@ -1,0 +1,51 @@
+## Clear Environment
+rm(list = ls())
+
+##
+## Load quantmod package
+##
+## Note: If this is the first time running the code you need to run
+## install.packages('quantmod') before running this line
+##
+library(quantmod)
+
+## Read in stock ticker list (from Hoover's) as CompanyTickers
+CompanyTickers <- read.csv("C:\\Users\\crabtreec\\Downloads\\companylist (2).csv", stringsAsFactors = FALSE, strip.white = TRUE)
+
+## Set working directory for PDF
+setwd("C:\\Users\\crabtreec\\Downloads\\")
+
+## Sort ticker symbols into alphabetical order
+sort(CompanyTickers$Symbol, decreasing = F)
+
+## Show top lines of dataset to verify accuracy
+head(CompanyTickers)
+
+## Create variable 'stocks' from the CompanyTickers df
+stocks <- (CompanyTickers$Symbol)
+
+## Generate new environment stockEnv for results
+stockEnv <- new.env()
+
+##
+## This pulls available stock data for the Symbols in the stock variable
+## The try function keeps the code from quitting for defunct symbols
+##
+try(getSymbols(stocks, src ='yahoo', env=stockEnv))
+
+## Establish pdf to save stocks. This will go to the assigned working directory
+pdf('All Stocks - 1 YearwithSMA.pdf')
+
+## Runs a loop on the data stored to stockEnv
+## White theme, with volume and simple moving average added to the line graph over specified timeframe
+for (stock in ls(stockEnv)){
+  try(chartSeries(stockEnv[[stock]], type = c('line'), 
+              theme= chartTheme("white", up.col = 'red'), name=stock,
+              TA="addVo(); addSMA(col = 'blue')", line.type = 'l', subset='last 12 months'))     
+}
+
+##Ends publishing of results to the PDF
+dev.off()
+
+
+## End (Not Run)
